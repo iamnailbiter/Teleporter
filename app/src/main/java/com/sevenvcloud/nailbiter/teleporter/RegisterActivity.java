@@ -2,6 +2,8 @@ package com.sevenvcloud.nailbiter.teleporter;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.Menu;
@@ -27,6 +29,9 @@ public class RegisterActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
+        // Shared Preference
+        SharedPreferences pref = getApplicationContext().getSharedPreferences("MyPref", MODE_PRIVATE);
+        final Editor editor = pref.edit();
 
         // Initialize
         mUserName = (EditText)findViewById(R.id.usernameRegEditText);
@@ -63,9 +68,14 @@ public class RegisterActivity extends Activity {
                                 // User Signed Up successfully
                                 Toast.makeText(RegisterActivity.this,"Success! Welcome", Toast.LENGTH_LONG).show();
 
+                                // Session
+                                editor.putBoolean("isLogged", true);
+                                editor.commit();
+
                                 // Take user to the Homepage
                                 Intent takeUserHome = new Intent(RegisterActivity.this, HomepageActivity.class);
                                 startActivity(takeUserHome);
+                                finish();
 
                             }else{
                                 // Error on Signing Up user. advice user

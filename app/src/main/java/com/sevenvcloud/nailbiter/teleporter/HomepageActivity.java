@@ -1,18 +1,57 @@
 package com.sevenvcloud.nailbiter.teleporter;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.Toast;
 
 
 public class HomepageActivity extends Activity {
+
+    protected Button mLogoutButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        // Shared Preference
+        SharedPreferences pref = getApplicationContext().getSharedPreferences("MyPref", MODE_PRIVATE);
+        final Editor editor = pref.edit();
+
+        // Session checking if user not logged
+        if(pref.getBoolean("isLogged", false)==false){
+
+            // Take user to the Login
+            Intent takeUserRegister = new Intent(HomepageActivity.this, LoginActivity.class);
+            startActivity(takeUserRegister);
+            finish();
+
+        }
+
+        // Initialize
+        mLogoutButton = (Button)findViewById(R.id.logoutHomebutton);
+
+        // Listen to Logout Button click
+        mLogoutButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(HomepageActivity.this,"Logout Clicked", Toast.LENGTH_LONG).show();
+                editor.clear();
+                editor.commit();
+
+                // Take user to the Login
+                Intent takeUserRegister = new Intent(HomepageActivity.this, LoginActivity.class);
+                startActivity(takeUserRegister);
+                finish();
+            }
+        });
 
     }
 

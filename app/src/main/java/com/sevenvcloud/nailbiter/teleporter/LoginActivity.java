@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -28,6 +30,9 @@ public class LoginActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        // Shared Preference
+        SharedPreferences pref = getApplicationContext().getSharedPreferences("MyPref", MODE_PRIVATE);
+        final Editor editor = pref.edit();
 
         // Initialize
         mUserName = (EditText)findViewById(R.id.usernameLoginTextBox);
@@ -52,9 +57,14 @@ public class LoginActivity extends Activity {
                             // Successfully Login!
                             Toast.makeText(LoginActivity.this,"Welcome Back!", Toast.LENGTH_LONG).show();
 
+                            // Session
+                            editor.putBoolean("isLogged", true);
+                            editor.commit();
+
                             // Take user to the Homepage
                             Intent takeUserHome = new Intent(LoginActivity.this, HomepageActivity.class);
                             startActivity(takeUserHome);
+                            finish();
 
                         }else{
                             // Error on Login! advice user
