@@ -3,6 +3,7 @@ package com.sevenvcloud.nailbiter.teleporter;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -26,9 +27,6 @@ public class RegisterActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
-        // Parse Connect
-        //Parse.enableLocalDatastore(this);
-        //Parse.initialize(this, "bu4HYIFnkALslxxtKAm1W3CnZobwpYvCRfuC4T0b", "lEU1Wbggz2z7sQfBBrb3q8nh2kGVDU6MDUCajVZe");
 
         // Initialize
         mUserName = (EditText)findViewById(R.id.usernameRegEditText);
@@ -46,31 +44,36 @@ public class RegisterActivity extends Activity {
                 String password = mUserPassword.getText().toString().trim();
                 String email = mUserEmail.getText().toString().trim();
 
+                if(TextUtils.isEmpty(username)||TextUtils.isEmpty(password)||TextUtils.isEmpty(email)){
 
-                ParseUser user = new ParseUser();
-                user.setUsername(username);
-                user.setPassword(password);
-                user.setEmail(email);
+                    // Blank data. advice user
+                    Toast.makeText(RegisterActivity.this,"Please insert data correctly", Toast.LENGTH_LONG).show();
 
-                user.signUpInBackground(new SignUpCallback() {
-                    @Override
-                    public void done(ParseException e) {
-                        if(e == null){
-                            // User Signed Up successfully
-                            Toast.makeText(RegisterActivity.this,"Success! Welcome", Toast.LENGTH_LONG).show();
+                }else{
 
-                            // Take user to the Homepage
-                            Intent takeUserHome = new Intent(RegisterActivity.this, HomepageActivity.class);
-                            startActivity(takeUserHome);
+                    ParseUser user = new ParseUser();
+                    user.setUsername(username);
+                    user.setPassword(password);
+                    user.setEmail(email);
 
-                        }else{
-                            // Error on Signing Up user. advice user
-                            Toast.makeText(RegisterActivity.this,e.getMessage(), Toast.LENGTH_LONG).show();
+                    user.signUpInBackground(new SignUpCallback() {
+                        @Override
+                        public void done(ParseException e) {
+                            if(e == null){
+                                // User Signed Up successfully
+                                Toast.makeText(RegisterActivity.this,"Success! Welcome", Toast.LENGTH_LONG).show();
+
+                                // Take user to the Homepage
+                                Intent takeUserHome = new Intent(RegisterActivity.this, HomepageActivity.class);
+                                startActivity(takeUserHome);
+
+                            }else{
+                                // Error on Signing Up user. advice user
+                                Toast.makeText(RegisterActivity.this,e.getMessage(), Toast.LENGTH_LONG).show();
+                            }
                         }
-                    }
-                });
-
-
+                    });
+                }
             }
         });
 

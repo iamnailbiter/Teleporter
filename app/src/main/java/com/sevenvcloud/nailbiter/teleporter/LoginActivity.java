@@ -28,9 +28,6 @@ public class LoginActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        // Parse Connect
-        Parse.enableLocalDatastore(this);
-        Parse.initialize(this, "bu4HYIFnkALslxxtKAm1W3CnZobwpYvCRfuC4T0b", "lEU1Wbggz2z7sQfBBrb3q8nh2kGVDU6MDUCajVZe");
 
         // Initialize
         mUserName = (EditText)findViewById(R.id.usernameLoginTextBox);
@@ -90,7 +87,6 @@ public class LoginActivity extends Activity {
 
 
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
