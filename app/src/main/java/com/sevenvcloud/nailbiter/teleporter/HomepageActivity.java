@@ -42,9 +42,10 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
     private String mLastLocUpdateTime;
 
     // Keys for storing activity state in the Bundle.
-    String REQUESTING_LOCATION_UPDATES_KEY;
-    String LOCATION_KEY;
-    String LAST_UPDATED_TIME_STRING_KEY;
+    // Keys for storing activity state in the Bundle.
+    protected final static String REQUESTING_LOCATION_UPDATES_KEY = "requesting-location-updates-key";
+    protected final static String LOCATION_KEY = "location-key";
+    protected final static String LAST_UPDATED_TIME_STRING_KEY = "last-updated-time-string-key";
 
 
     @Override
