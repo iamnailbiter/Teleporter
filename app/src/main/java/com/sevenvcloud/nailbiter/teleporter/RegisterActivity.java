@@ -30,8 +30,7 @@ public class RegisterActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
         // Shared Preference
-        SharedPreferences pref = getApplicationContext().getSharedPreferences("MyPref", MODE_PRIVATE);
-        final Editor editor = pref.edit();
+        final SessionManager mSM = new SessionManager(getApplicationContext());
 
         // Initialize
         mUserName = (EditText)findViewById(R.id.usernameRegEditText);
@@ -45,7 +44,7 @@ public class RegisterActivity extends Activity {
             public void onClick(View v) {
 
                 // Get the user data
-                String username = mUserName.getText().toString().trim();
+                final String username = mUserName.getText().toString().trim();
                 String password = mUserPassword.getText().toString().trim();
                 String email = mUserEmail.getText().toString().trim();
 
@@ -68,9 +67,8 @@ public class RegisterActivity extends Activity {
                                 // User Signed Up successfully
                                 Toast.makeText(RegisterActivity.this,"Success! Welcome", Toast.LENGTH_LONG).show();
 
-                                // Session
-                                editor.putBoolean("isLogged", true);
-                                editor.commit();
+                                // Create login Session
+                                mSM.createLoginSession();
 
                                 // Take user to the Homepage
                                 Intent takeUserHome = new Intent(RegisterActivity.this, HomepageActivity.class);

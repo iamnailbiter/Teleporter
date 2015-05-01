@@ -15,7 +15,6 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.parse.LogInCallback;
-import com.parse.Parse;
 import com.parse.ParseUser;
 
 
@@ -31,8 +30,7 @@ public class LoginActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         // Shared Preference
-        SharedPreferences pref = getApplicationContext().getSharedPreferences("MyPref", MODE_PRIVATE);
-        final Editor editor = pref.edit();
+        final SessionManager mSM = new SessionManager(getApplicationContext());
 
         // Initialize
         mUserName = (EditText)findViewById(R.id.usernameLoginTextBox);
@@ -46,7 +44,7 @@ public class LoginActivity extends Activity {
             @Override
             public void onClick(View v) {
                 // Get the user inputs from edittext and convert to string
-                String username = mUserName.getText().toString().trim();
+                final String username = mUserName.getText().toString().trim();
                 String password = mPassword.getText().toString().trim();
 
                 // login the user using parse sdk
@@ -56,11 +54,8 @@ public class LoginActivity extends Activity {
                         if(e == null){
                             // Successfully Login!
                             Toast.makeText(LoginActivity.this,"Welcome Back!", Toast.LENGTH_LONG).show();
-
-                            // Session
-                            editor.putBoolean("isLogged", true);
-                            editor.commit();
-
+                            // Create Login Session
+                            mSM.createLoginSession();
                             // Take user to the Homepage
                             Intent takeUserHome = new Intent(LoginActivity.this, HomepageActivity.class);
                             startActivity(takeUserHome);

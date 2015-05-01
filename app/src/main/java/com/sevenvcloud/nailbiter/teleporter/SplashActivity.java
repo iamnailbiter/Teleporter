@@ -17,7 +17,7 @@ public class SplashActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
         // Shared Preference
-        final SharedPreferences pref = getApplicationContext().getSharedPreferences("MyPref", MODE_PRIVATE);
+        final SharedPreferences pref = getApplicationContext().getSharedPreferences("TeleporterPref", MODE_PRIVATE);
 
         // Sleep Splash
         new Handler().postDelayed(new Runnable() {
@@ -44,7 +44,7 @@ public class SplashActivity extends Activity {
 
                 }
             }
-        }, 3*1000); // wait for 3 seconds
+        }, 1*1000); // wait for 1 seconds
     }
 
 
