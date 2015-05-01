@@ -29,12 +29,20 @@
         android:layout_below="@+id/emailHomeTextView"
         android:layout_centerHorizontal="true" />
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Last Update Position :"
+        android:id="@+id/lastLocUpdateTimeHomeTextView"
+        android:layout_below="@+id/positionHomeTextView"
+        android:layout_centerHorizontal="true" />
+
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Locate"
         android:id="@+id/locateHomebutton"
-        android:layout_below="@+id/positionHomeTextView"
+        android:layout_below="@+id/lastLocUpdateTimeHomeTextView"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 
