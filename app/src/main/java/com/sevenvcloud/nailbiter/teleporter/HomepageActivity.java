@@ -206,6 +206,7 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
         Log.d("Update Longitude : ", String.valueOf(mCurrentLocation.getLongitude()));
         mPositionTextView.setText("Position : "+String.valueOf(mCurrentLocation.getLatitude()+","+String.valueOf(mCurrentLocation.getLongitude())));
         mLastLocUpdateTimeTextView.setText("Last Update Position : "+mLastLocUpdateTime);
+        mRequestingLocationUpdates = false;
     }
 
     public void onSaveInstanceState(Bundle savedInstanceState) {
