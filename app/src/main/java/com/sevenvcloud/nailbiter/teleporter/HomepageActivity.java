@@ -76,7 +76,7 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
 
 
         // Update values using data stored in the Bundle.
-        updateValuesFromBundle(savedInstanceState);
+        //updateValuesFromBundle(savedInstanceState);
 
         // Build Google API Client
         buildGoogleApiClient();
@@ -85,8 +85,8 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
         mLocateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mRequestingLocationUpdates = true;
-                startLocationUpdates();
+                //mRequestingLocationUpdates = true;
+                //startLocationUpdates();
             }
         });
 
@@ -98,8 +98,8 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
                 mSM.logoutUser();
 
                 // Take user to the Login
-                Intent takeUserRegister = new Intent(HomepageActivity.this, LoginActivity.class);
-                startActivity(takeUserRegister);
+                Intent takeUserLogin = new Intent(HomepageActivity.this, LoginActivity.class);
+                startActivity(takeUserLogin);
                 finish();
             }
         });
@@ -184,6 +184,7 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .build();
+        createLocationRequest();
     }
 
     protected void createLocationRequest() {
@@ -207,7 +208,6 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
         Log.d("Update Longitude : ", String.valueOf(mCurrentLocation.getLongitude()));
         mPositionTextView.setText("Position : "+String.valueOf(mCurrentLocation.getLatitude()+","+String.valueOf(mCurrentLocation.getLongitude())));
         mLastLocUpdateTimeTextView.setText("Last Update Position : "+mLastLocUpdateTime);
-        mRequestingLocationUpdates = false;
     }
 
     public void onSaveInstanceState(Bundle savedInstanceState) {
