@@ -40,7 +40,7 @@
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Locate"
+        android:text="Update Position!"
         android:id="@+id/locateHomebutton"
         android:layout_below="@+id/lastLocUpdateTimeHomeTextView"
         android:layout_alignParentLeft="true"

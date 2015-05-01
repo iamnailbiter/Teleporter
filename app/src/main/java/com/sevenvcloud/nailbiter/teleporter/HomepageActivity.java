@@ -76,7 +76,7 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
 
 
         // Update values using data stored in the Bundle.
-        //updateValuesFromBundle(savedInstanceState);
+        updateValuesFromBundle(savedInstanceState);
 
         // Build Google API Client
         buildGoogleApiClient();
@@ -87,6 +87,15 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
             public void onClick(View v) {
                 //mRequestingLocationUpdates = true;
                 //startLocationUpdates();
+                if (mRequestingLocationUpdates) {
+                    mRequestingLocationUpdates = false;
+                    stopLocationUpdates();
+                    setLocateButtonsEnabledState();
+                } else {
+                    mRequestingLocationUpdates = true;
+                    startLocationUpdates();
+                    setLocateButtonsEnabledState();
+                }
             }
         });
 
@@ -115,7 +124,7 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
     @Override
     protected void onPause() {
         super.onPause();
-        mGoogleApiClient.disconnect();
+        //mGoogleApiClient.disconnect();
         stopLocationUpdates();
     }
 
@@ -157,7 +166,7 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
             if (savedInstanceState.keySet().contains(REQUESTING_LOCATION_UPDATES_KEY)) {
                 mRequestingLocationUpdates = savedInstanceState.getBoolean(
                         REQUESTING_LOCATION_UPDATES_KEY);
-                //setButtonsEnabledState();
+                setLocateButtonsEnabledState();
             }
 
             // Update the value of mCurrentLocation from the Bundle and update the
@@ -174,6 +183,14 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
                         LAST_UPDATED_TIME_STRING_KEY);
             }
             updateUI();
+        }
+    }
+
+    private void setLocateButtonsEnabledState() {
+        if (mRequestingLocationUpdates) {
+            mLocateButton.setText("Stop Updating Position");
+        } else {
+            mLocateButton.setText("Update Position!");
         }
     }
 
@@ -204,9 +221,9 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
     }
 
     private void updateUI() {
-        Log.d("Update Latitude : ",String.valueOf(mCurrentLocation.getLatitude()));
+        Log.d("Update Latitude : ", String.valueOf(mCurrentLocation.getLatitude()));
         Log.d("Update Longitude : ", String.valueOf(mCurrentLocation.getLongitude()));
-        mPositionTextView.setText("Position : "+String.valueOf(mCurrentLocation.getLatitude()+","+String.valueOf(mCurrentLocation.getLongitude())));
+        mPositionTextView.setText("Position : " + String.valueOf(mCurrentLocation.getLatitude() + "," + String.valueOf(mCurrentLocation.getLongitude())));
         mLastLocUpdateTimeTextView.setText("Last Update Position : "+mLastLocUpdateTime);
     }
 
