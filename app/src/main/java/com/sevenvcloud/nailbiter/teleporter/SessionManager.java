@@ -44,6 +44,9 @@ public class SessionManager {
     // Email (make variable public to access from outside)
     public static final String KEY_EMAIL = "email";
 
+    // Driver (make variable public to access from outside)
+    public static final String IS_DRIVER = "driver";
+
     // Constructor
     public SessionManager(Context context){
         this._context = context;
@@ -58,10 +61,12 @@ public class SessionManager {
 
         Log.d("user","User : "+currentUser.getUsername());
         Log.d("user","Email : "+currentUser.getEmail());
+        Log.d("user","Driver : "+currentUser.getBoolean("driver"));
 
         editor.putString(KEY_USERNAME,currentUser.getUsername());
         editor.putString(KEY_EMAIL,currentUser.getEmail());
         editor.putBoolean(IS_LOGIN, true);
+        editor.putBoolean(IS_DRIVER, currentUser.getBoolean("driver"));
         editor.commit();
     }
 
@@ -69,16 +74,25 @@ public class SessionManager {
         ParseUser currentUser = ParseUser.getCurrentUser();
 
         if(currentUser == null){
-            // User is not logged redirect to login
             Intent i = new Intent(_context,LoginActivity.class);
-            // Closing all the Activities
             i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-
-            // Add new Flag to start new Activity
             i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-            // Staring Login Activity
             _context.startActivity(i);
+        }else{
+
+
+            if(!currentUser.getBoolean("driver")) {
+                Intent i = new Intent(_context, HomepageActivity.class);
+                i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                _context.startActivity(i);
+
+            }else{
+                Intent i = new Intent(_context, DriverHomepageActivity.class);
+                i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                _context.startActivity(i);
+            }
         }
     }
 

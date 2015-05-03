@@ -59,6 +59,7 @@ public class RegisterActivity extends Activity {
                     user.setUsername(username);
                     user.setPassword(password);
                     user.setEmail(email);
+                    user.put("driver", false);
 
                     user.signUpInBackground(new SignUpCallback() {
                         @Override
@@ -71,8 +72,7 @@ public class RegisterActivity extends Activity {
                                 mSM.createLoginSession();
 
                                 // Take user to the Homepage
-                                Intent takeUserHome = new Intent(RegisterActivity.this, HomepageActivity.class);
-                                startActivity(takeUserHome);
+                                mSM.checkLogin();
                                 finish();
 
                             }else{

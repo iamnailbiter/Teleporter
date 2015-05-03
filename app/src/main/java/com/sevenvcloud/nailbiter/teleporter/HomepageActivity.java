@@ -42,7 +42,6 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
     private String mLastLocUpdateTime;
 
     // Keys for storing activity state in the Bundle.
-    // Keys for storing activity state in the Bundle.
     protected final static String REQUESTING_LOCATION_UPDATES_KEY = "requesting-location-updates-key";
     protected final static String LOCATION_KEY = "location-key";
     protected final static String LAST_UPDATED_TIME_STRING_KEY = "last-updated-time-string-key";
@@ -54,10 +53,6 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
         setContentView(R.layout.activity_main);
         // Shared Preference
         final SessionManager mSM = new SessionManager(getApplicationContext());
-
-
-        // Session checking if user not logged
-        mSM.checkLogin();
 
         // Initialize
         mUsernameTextView = (TextView)findViewById(R.id.usernameHomeTextView);
@@ -103,12 +98,8 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
         mLogoutButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(HomepageActivity.this, "Logout Clicked", Toast.LENGTH_LONG).show();
+                Toast.makeText(HomepageActivity.this, "Thank you", Toast.LENGTH_LONG).show();
                 mSM.logoutUser();
-
-                // Take user to the Login
-                Intent takeUserLogin = new Intent(HomepageActivity.this, LoginActivity.class);
-                startActivity(takeUserLogin);
                 finish();
             }
         });
@@ -124,8 +115,8 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
     @Override
     protected void onPause() {
         super.onPause();
-        //mGoogleApiClient.disconnect();
-        stopLocationUpdates();
+        mGoogleApiClient.disconnect();
+        //stopLocationUpdates();
     }
 
     @Override
@@ -248,7 +239,6 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
             Log.d("Latitude : ",String.valueOf(mLastLocation.getLatitude()));
             Log.d("Longitude : ",String.valueOf(mLastLocation.getLongitude()));
             mPositionTextView.setText("Position : "+String.valueOf(mLastLocation.getLatitude()+","+String.valueOf(mLastLocation.getLongitude())));
-
         }
     }
 

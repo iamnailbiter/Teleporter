@@ -57,8 +57,7 @@ public class LoginActivity extends Activity {
                             // Create Login Session
                             mSM.createLoginSession();
                             // Take user to the Homepage
-                            Intent takeUserHome = new Intent(LoginActivity.this, HomepageActivity.class);
-                            startActivity(takeUserHome);
+                            mSM.checkLogin();
                             finish();
 
                         }else{
