@@ -38,6 +38,9 @@
             android:name=".DriverHomepageActivity"
             android:label="@string/title_activity_driver_homepage" >
         </activity>
+        <service
+            android:name=".FetchAddressIntentService"
+            android:exported="false"/>
     </application>
 
 </manifest>

@@ -2,8 +2,11 @@ package com.sevenvcloud.nailbiter.teleporter;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.ResultReceiver;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -11,6 +14,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -26,25 +30,34 @@ import java.util.Date;
 
 public class HomepageActivity extends Activity implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener {
 
+    protected static final String TAG = "main-activity";
+
     protected TextView mUsernameTextView;
     protected TextView mEmailTextView;
     protected TextView mPositionTextView;
+    protected TextView mAddressTextView;
     protected TextView mLastLocUpdateTimeTextView;
     protected Button mLocateButton;
     protected Button mLogoutButton;
 
     protected Boolean mRequestingLocationUpdates;
+    protected boolean mAddressRequested;
+    protected String mAddressOutput;
 
     private GoogleApiClient mGoogleApiClient;
     private Location mLastLocation;
     private Location mCurrentLocation;
     private LocationRequest mLocationRequest;
     private String mLastLocUpdateTime;
+    private AddressResultReceiver mResultReceiver;
 
     // Keys for storing activity state in the Bundle.
     protected final static String REQUESTING_LOCATION_UPDATES_KEY = "requesting-location-updates-key";
     protected final static String LOCATION_KEY = "location-key";
     protected final static String LAST_UPDATED_TIME_STRING_KEY = "last-updated-time-string-key";
+    protected static final String ADDRESS_REQUESTED_KEY = "address-request-pending";
+    protected static final String LOCATION_ADDRESS_KEY = "location-address";
+
 
 
     @Override
@@ -54,16 +67,21 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
         // Shared Preference
         final SessionManager mSM = new SessionManager(getApplicationContext());
 
+        // Address Result
+        mResultReceiver = new AddressResultReceiver(new Handler());
+
         // Initialize
         mUsernameTextView = (TextView)findViewById(R.id.usernameHomeTextView);
         mEmailTextView = (TextView)findViewById(R.id.emailHomeTextView);
         mPositionTextView = (TextView)findViewById(R.id.positionHomeTextView);
+        mAddressTextView = (TextView)findViewById(R.id.addressHomeTextView);
         mLastLocUpdateTimeTextView = (TextView)findViewById(R.id.lastLocUpdateTimeHomeTextView);
         mLocateButton = (Button)findViewById(R.id.locateHomebutton);
         mLogoutButton = (Button)findViewById(R.id.logoutHomebutton);
 
         mRequestingLocationUpdates = false;
         mLastLocUpdateTime = "";
+        mAddressOutput = "";
 
         // Show user detail
         mUsernameTextView.setText("Username : "+mSM.pref.getString(mSM.KEY_USERNAME,null));
@@ -80,8 +98,12 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
         mLocateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //mRequestingLocationUpdates = true;
-                //startLocationUpdates();
+
+                if (mGoogleApiClient.isConnected() && mLastLocation != null) {
+                    startIntentService();
+                }
+                mAddressRequested = true;
+
                 if (mRequestingLocationUpdates) {
                     mRequestingLocationUpdates = false;
                     stopLocationUpdates();
@@ -126,6 +148,7 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
             startLocationUpdates();
         }
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -173,6 +196,17 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
                 mLastLocUpdateTime = savedInstanceState.getString(
                         LAST_UPDATED_TIME_STRING_KEY);
             }
+
+            if (savedInstanceState.keySet().contains(ADDRESS_REQUESTED_KEY)) {
+                mAddressRequested = savedInstanceState.getBoolean(ADDRESS_REQUESTED_KEY);
+            }
+
+            if (savedInstanceState.keySet().contains(LOCATION_ADDRESS_KEY)) {
+                mAddressOutput = savedInstanceState.getString(LOCATION_ADDRESS_KEY);
+                displayAddressOutput();
+            }
+
+
             updateUI();
         }
     }
@@ -186,7 +220,7 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
     }
 
     protected synchronized void buildGoogleApiClient() {
-        Log.d("Building","Building");
+        Log.d(TAG,"Building");
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
@@ -212,8 +246,8 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
     }
 
     private void updateUI() {
-        Log.d("Update Latitude : ", String.valueOf(mCurrentLocation.getLatitude()));
-        Log.d("Update Longitude : ", String.valueOf(mCurrentLocation.getLongitude()));
+        Log.d(TAG,"Update Latitude : "+ String.valueOf(mCurrentLocation.getLatitude()));
+        Log.d(TAG,"Update Longitude : "+ String.valueOf(mCurrentLocation.getLongitude()));
         mPositionTextView.setText("Position : " + String.valueOf(mCurrentLocation.getLatitude() + "," + String.valueOf(mCurrentLocation.getLongitude())));
         mLastLocUpdateTimeTextView.setText("Last Update Position : "+mLastLocUpdateTime);
     }
@@ -223,22 +257,41 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
                 mRequestingLocationUpdates);
         savedInstanceState.putParcelable(LOCATION_KEY, mCurrentLocation);
         savedInstanceState.putString(LAST_UPDATED_TIME_STRING_KEY, mLastLocUpdateTime);
+        // Save whether the address has been requested.
+        savedInstanceState.putBoolean(ADDRESS_REQUESTED_KEY, mAddressRequested);
+
+        // Save the address string.
+        savedInstanceState.putString(LOCATION_ADDRESS_KEY, mAddressOutput);
+
         super.onSaveInstanceState(savedInstanceState);
     }
 
     @Override
-    public void onConnected(Bundle bundle) {
-        Log.d("Connected","I'm Connected!");
+    public void onConnected(Bundle connectionHint) {
+        Log.d(TAG,"I'm Connected!");
 
         if (mRequestingLocationUpdates) {
             startLocationUpdates();
         }
 
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+
         if (mLastLocation != null) {
-            Log.d("Latitude : ",String.valueOf(mLastLocation.getLatitude()));
-            Log.d("Longitude : ",String.valueOf(mLastLocation.getLongitude()));
+            Log.d(TAG,"Latitude : "+String.valueOf(mLastLocation.getLatitude()));
+            Log.d(TAG,"Longitude : "+String.valueOf(mLastLocation.getLongitude()));
+
+            // Determine whether a Geocoder is available.
+            if (!Geocoder.isPresent()) {
+                Log.d(TAG, String.valueOf(R.string.no_geocoder_available));
+                return;
+            }
+
             mPositionTextView.setText("Position : "+String.valueOf(mLastLocation.getLatitude()+","+String.valueOf(mLastLocation.getLongitude())));
+
+            if (mRequestingLocationUpdates) {
+                startIntentService();
+            }
+
         }
     }
 
@@ -249,7 +302,7 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
-        Log.d("Failed",connectionResult.toString());
+        Log.d(TAG,"Failed :"+connectionResult.toString());
     }
 
     @Override
@@ -258,4 +311,40 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
         mLastLocUpdateTime = DateFormat.getTimeInstance().format(new Date());
         updateUI();
     }
+
+    class AddressResultReceiver extends ResultReceiver {
+        public AddressResultReceiver(Handler handler) {
+            super(handler);
+        }
+
+        @Override
+        protected void onReceiveResult(int resultCode, Bundle resultData) {
+
+            // Display the address string
+            // or an error message sent from the intent service.
+
+            mAddressOutput = resultData.getString(Constants.RESULT_DATA_KEY);
+            displayAddressOutput();
+
+            // Show a log message if an address was found.
+            if (resultCode == Constants.SUCCESS_RESULT) {
+                Log.d(TAG,getString(R.string.address_found));
+            }
+            mAddressRequested = false;
+
+        }
+    }
+
+    protected void startIntentService() {
+        Intent intent = new Intent(this, FetchAddressIntentService.class);
+        mResultReceiver = new AddressResultReceiver(new Handler());
+        intent.putExtra(Constants.RECEIVER, mResultReceiver);
+        intent.putExtra(Constants.LOCATION_DATA_EXTRA, mLastLocation);
+        startService(intent);
+    }
+
+    protected void displayAddressOutput() {
+        mAddressTextView.setText("Address : "+mAddressOutput);
+    }
+
 }

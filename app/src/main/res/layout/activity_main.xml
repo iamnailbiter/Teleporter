@@ -29,13 +29,20 @@
         android:id="@+id/positionHomeTextView"
         android:layout_below="@+id/emailHomeTextView"
         android:layout_centerHorizontal="true" />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Address :"
+        android:id="@+id/addressHomeTextView"
+        android:layout_below="@+id/positionHomeTextView"
+        android:layout_centerHorizontal="true" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Last Update Position :"
         android:id="@+id/lastLocUpdateTimeHomeTextView"
-        android:layout_below="@+id/positionHomeTextView"
+        android:layout_below="@+id/addressHomeTextView"
         android:layout_centerHorizontal="true" />
 
     <Button
