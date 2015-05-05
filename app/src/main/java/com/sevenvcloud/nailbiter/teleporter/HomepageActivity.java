@@ -30,7 +30,7 @@ import java.util.Date;
 
 public class HomepageActivity extends Activity implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener {
 
-    protected static final String TAG = "main-activity";
+    protected static final String TAG = "homepage-activity";
 
     protected TextView mUsernameTextView;
     protected TextView mEmailTextView;
@@ -99,18 +99,22 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
             @Override
             public void onClick(View v) {
 
-                if (mGoogleApiClient.isConnected() && mLastLocation != null) {
-                    startIntentService();
-                }
-                mAddressRequested = true;
-
+                //if(mAddressRequested==false) {
+                //    if (mGoogleApiClient.isConnected() && mLastLocation != null) {
+                //        startIntentService();
+                //    }
+                //    mAddressRequested = true;
+                //}
                 if (mRequestingLocationUpdates) {
                     mRequestingLocationUpdates = false;
+                    mAddressRequested = false;
                     stopLocationUpdates();
                     setLocateButtonsEnabledState();
                 } else {
                     mRequestingLocationUpdates = true;
+                    mAddressRequested = true;
                     startLocationUpdates();
+                    startIntentService();
                     setLocateButtonsEnabledState();
                 }
             }
@@ -146,6 +150,7 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
         super.onResume();
         if (mGoogleApiClient.isConnected() && !mRequestingLocationUpdates) {
             startLocationUpdates();
+            startIntentService();
         }
     }
 
@@ -220,7 +225,7 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
     }
 
     protected synchronized void buildGoogleApiClient() {
-        Log.d(TAG,"Building");
+        Log.d(TAG, "Building");
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
@@ -246,10 +251,10 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
     }
 
     private void updateUI() {
-        Log.d(TAG,"Update Latitude : "+ String.valueOf(mCurrentLocation.getLatitude()));
-        Log.d(TAG,"Update Longitude : "+ String.valueOf(mCurrentLocation.getLongitude()));
+        Log.d(TAG, "Update Latitude : " + String.valueOf(mCurrentLocation.getLatitude()));
+        Log.d(TAG, "Update Longitude : " + String.valueOf(mCurrentLocation.getLongitude()));
         mPositionTextView.setText("Position : " + String.valueOf(mCurrentLocation.getLatitude() + "," + String.valueOf(mCurrentLocation.getLongitude())));
-        mLastLocUpdateTimeTextView.setText("Last Update Position : "+mLastLocUpdateTime);
+        mLastLocUpdateTimeTextView.setText("Last Update Position : " + mLastLocUpdateTime);
     }
 
     public void onSaveInstanceState(Bundle savedInstanceState) {
@@ -278,7 +283,7 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
 
         if (mLastLocation != null) {
             Log.d(TAG,"Latitude : "+String.valueOf(mLastLocation.getLatitude()));
-            Log.d(TAG,"Longitude : "+String.valueOf(mLastLocation.getLongitude()));
+            Log.d(TAG, "Longitude : " + String.valueOf(mLastLocation.getLongitude()));
 
             // Determine whether a Geocoder is available.
             if (!Geocoder.isPresent()) {
@@ -286,13 +291,15 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
                 return;
             }
 
-            mPositionTextView.setText("Position : "+String.valueOf(mLastLocation.getLatitude()+","+String.valueOf(mLastLocation.getLongitude())));
+            mPositionTextView.setText("Position : " + String.valueOf(mLastLocation.getLatitude() + "," + String.valueOf(mLastLocation.getLongitude())));
 
-            if (mRequestingLocationUpdates) {
+            if (mAddressRequested) {
                 startIntentService();
             }
 
+
         }
+
     }
 
     @Override
@@ -302,7 +309,7 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
-        Log.d(TAG,"Failed :"+connectionResult.toString());
+        Log.d(TAG, "Failed :" + connectionResult.toString());
     }
 
     @Override
@@ -310,6 +317,7 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
         mCurrentLocation = location;
         mLastLocUpdateTime = DateFormat.getTimeInstance().format(new Date());
         updateUI();
+        startIntentService();
     }
 
     class AddressResultReceiver extends ResultReceiver {
@@ -330,16 +338,20 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
             if (resultCode == Constants.SUCCESS_RESULT) {
                 Log.d(TAG,getString(R.string.address_found));
             }
-            mAddressRequested = false;
-
         }
     }
 
     protected void startIntentService() {
+        Location mAddressLocation;
+        if(mCurrentLocation==null){
+            mAddressLocation = mLastLocation;
+        }else{
+            mAddressLocation = mCurrentLocation;
+        }
         Intent intent = new Intent(this, FetchAddressIntentService.class);
         mResultReceiver = new AddressResultReceiver(new Handler());
         intent.putExtra(Constants.RECEIVER, mResultReceiver);
-        intent.putExtra(Constants.LOCATION_DATA_EXTRA, mLastLocation);
+        intent.putExtra(Constants.LOCATION_DATA_EXTRA, mAddressLocation);
         startService(intent);
     }
 

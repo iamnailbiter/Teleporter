@@ -19,6 +19,7 @@ import com.parse.ParseUser;
 
 
 public class LoginActivity extends Activity {
+    protected static final String TAG = "login-activity";
 
     protected EditText mUserName;
     protected EditText mPassword;

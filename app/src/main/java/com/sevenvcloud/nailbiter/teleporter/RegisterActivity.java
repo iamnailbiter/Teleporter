@@ -19,6 +19,7 @@ import com.parse.SignUpCallback;
 
 
 public class RegisterActivity extends Activity {
+    protected static final String TAG = "register-activity";
 
     protected EditText mUserName;
     protected EditText mUserEmail;

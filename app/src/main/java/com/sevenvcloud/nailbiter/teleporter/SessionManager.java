@@ -17,6 +17,7 @@ import java.util.HashMap;
  * Created by nailbiter on 29/04/15.
  */
 public class SessionManager {
+    protected static final String TAG = "session-manager-class";
 
     Teleporter mT = new Teleporter();
 
@@ -59,9 +60,9 @@ public class SessionManager {
 
         ParseUser currentUser = ParseUser.getCurrentUser();
 
-        Log.d("user","User : "+currentUser.getUsername());
-        Log.d("user","Email : "+currentUser.getEmail());
-        Log.d("user","Driver : "+currentUser.getBoolean("driver"));
+        Log.d(TAG,"User : "+currentUser.getUsername());
+        Log.d(TAG,"Email : "+currentUser.getEmail());
+        Log.d(TAG,"Driver : "+currentUser.getBoolean("driver"));
 
         editor.putString(KEY_USERNAME,currentUser.getUsername());
         editor.putString(KEY_EMAIL,currentUser.getEmail());
