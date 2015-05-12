@@ -41,7 +41,7 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
     protected Button mLogoutButton;
 
     protected Boolean mRequestingLocationUpdates;
-    protected boolean mAddressRequested;
+    protected Boolean mRequestingAddressUpdates;
     protected String mAddressOutput;
 
     private GoogleApiClient mGoogleApiClient;
@@ -79,14 +79,17 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
         mLocateButton = (Button)findViewById(R.id.locateHomebutton);
         mLogoutButton = (Button)findViewById(R.id.logoutHomebutton);
 
+        // Request Default State
         mRequestingLocationUpdates = false;
+        mRequestingAddressUpdates = false;
+
+        // Default Null Value
         mLastLocUpdateTime = "";
         mAddressOutput = "";
 
         // Show user detail
         mUsernameTextView.setText("Username : "+mSM.pref.getString(mSM.KEY_USERNAME,null));
         mEmailTextView.setText("Email : "+mSM.pref.getString(mSM.KEY_EMAIL,null));
-
 
         // Update values using data stored in the Bundle.
         updateValuesFromBundle(savedInstanceState);
@@ -99,22 +102,16 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
             @Override
             public void onClick(View v) {
 
-                //if(mAddressRequested==false) {
-                //    if (mGoogleApiClient.isConnected() && mLastLocation != null) {
-                //        startIntentService();
-                //    }
-                //    mAddressRequested = true;
-                //}
                 if (mRequestingLocationUpdates) {
                     mRequestingLocationUpdates = false;
-                    mAddressRequested = false;
+                    mRequestingAddressUpdates = false;
                     stopLocationUpdates();
                     setLocateButtonsEnabledState();
                 } else {
                     mRequestingLocationUpdates = true;
-                    mAddressRequested = true;
+                    mRequestingAddressUpdates = true;
                     startLocationUpdates();
-                    startIntentService();
+                    startAddressUpdates();
                     setLocateButtonsEnabledState();
                 }
             }
@@ -124,7 +121,9 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
         mLogoutButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Toast logout message
                 Toast.makeText(HomepageActivity.this, "Thank you", Toast.LENGTH_LONG).show();
+
                 mSM.logoutUser();
                 finish();
             }
@@ -135,22 +134,24 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
     @Override
     protected void onStart() {
         super.onStart();
+        // Connecting Google API Client
         mGoogleApiClient.connect();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        // Disconnect Google API Client
         mGoogleApiClient.disconnect();
-        //stopLocationUpdates();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        // Resume Service
         if (mGoogleApiClient.isConnected() && !mRequestingLocationUpdates) {
             startLocationUpdates();
-            startIntentService();
+            startAddressUpdates();
         }
     }
 
@@ -203,7 +204,7 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
             }
 
             if (savedInstanceState.keySet().contains(ADDRESS_REQUESTED_KEY)) {
-                mAddressRequested = savedInstanceState.getBoolean(ADDRESS_REQUESTED_KEY);
+                mRequestingAddressUpdates = savedInstanceState.getBoolean(ADDRESS_REQUESTED_KEY);
             }
 
             if (savedInstanceState.keySet().contains(LOCATION_ADDRESS_KEY)) {
@@ -263,7 +264,7 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
         savedInstanceState.putParcelable(LOCATION_KEY, mCurrentLocation);
         savedInstanceState.putString(LAST_UPDATED_TIME_STRING_KEY, mLastLocUpdateTime);
         // Save whether the address has been requested.
-        savedInstanceState.putBoolean(ADDRESS_REQUESTED_KEY, mAddressRequested);
+        savedInstanceState.putBoolean(ADDRESS_REQUESTED_KEY, mRequestingAddressUpdates);
 
         // Save the address string.
         savedInstanceState.putString(LOCATION_ADDRESS_KEY, mAddressOutput);
@@ -293,11 +294,9 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
 
             mPositionTextView.setText("Position : " + String.valueOf(mLastLocation.getLatitude() + "," + String.valueOf(mLastLocation.getLongitude())));
 
-            if (mAddressRequested) {
-                startIntentService();
+            if (mRequestingAddressUpdates) {
+                startAddressUpdates();
             }
-
-
         }
 
     }
@@ -317,7 +316,7 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
         mCurrentLocation = location;
         mLastLocUpdateTime = DateFormat.getTimeInstance().format(new Date());
         updateUI();
-        startIntentService();
+        startAddressUpdates();
     }
 
     class AddressResultReceiver extends ResultReceiver {
@@ -341,7 +340,7 @@ public class HomepageActivity extends Activity implements ConnectionCallbacks, O
         }
     }
 
-    protected void startIntentService() {
+    protected void startAddressUpdates() {
         Location mAddressLocation;
         if(mCurrentLocation==null){
             mAddressLocation = mLastLocation;
